@@ -17,7 +17,9 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp REQUIRED)
+find_package(rclcpp  REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -29,5 +31,23 @@ if(BUILD_TESTING)
   #set(ament_cmake_cpplint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
+
+add_executable(patrol_node src/patrol.cpp)
+ament_target_dependencies(patrol_node rclcpp sensor_msgs geometry_msgs)
+
+
+# Install executable
+install(TARGETS patrol_node DESTINATION lib/${PROJECT_NAME})
+
+# Install launch file
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
+# Install package.xml
+install(FILES package.xml DESTINATION share/${PROJECT_NAME})
+
+# Export dependencies
+ament_export_dependencies(rclcpp sensor_msgs geometry_msgs)
+
+
 
 ament_package()
