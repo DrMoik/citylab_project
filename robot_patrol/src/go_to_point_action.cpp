@@ -117,12 +117,13 @@ private:
 
       feedback->current_pos.x = current_odom_.pose.pose.position.x;
       feedback->current_pos.y = current_odom_.pose.pose.position.y;
-      feedback->current_pos.z = yaw;
+      feedback->current_pos.z = yaw * 180 / 3.14159265;
 
       double angle = std::atan2(error_y, error_x) - yaw;
+      double error_th = goal->goal_pos.z * 3.14159265 / 180 - yaw;
 
       // Check if we've reached the goal position
-      if (distance < 0.05 && std::abs(goal->goal_pos.z - yaw) < 0.05) {
+      if (distance < 0.05 && std::abs(error_th) < 0.05) {
         result->status = true;
         goal_handle->succeed(result);
         RCLCPP_INFO(this->get_logger(), "Goal succeeded");
@@ -130,16 +131,17 @@ private:
         cmd_vel.angular.z = 0.0;
         publisher_->publish(cmd_vel);
         return;
-      } else if (distance < 0.05 && std::abs(goal->goal_pos.z - yaw) > 0.05) {
+      } else if (distance < 0.05 && std::abs(error_th) > 0.05) {
         cmd_vel.linear.x = 0.0;
-        cmd_vel.angular.z = 0.0;
+        cmd_vel.angular.z = std::min(std::max(0.5 * error_th, -1.0), 1.0);
+        
       }
 
-      if (std::abs(angle) > 0.05) {
+      if (distance > 0.05 && std::abs(angle) > 0.05) {
         cmd_vel.linear.x = 0.0;
         cmd_vel.angular.z = std::min(std::max(0.5 * angle, -1.0), 1.0);
-      } else {
-        cmd_vel.linear.x = std::min(std::max(0.3 * distance, -1.0), 1.0);
+      } else if (distance > 0.05 && std::abs(angle) < 0.05) {
+        cmd_vel.linear.x = std::min(std::max(1 * distance, -1.0), 1.0);
         cmd_vel.angular.z = 0.0;
       }
 
