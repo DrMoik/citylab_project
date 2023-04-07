@@ -17,10 +17,13 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(rclcpp  REQUIRED)
-find_package(sensor_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(custom_interfaces REQUIRED)
+
 
 
 if(BUILD_TESTING)
@@ -34,6 +37,10 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+
+
+
+
 add_executable(patrol_node src/patrol.cpp)
 ament_target_dependencies(patrol_node rclcpp sensor_msgs geometry_msgs custom_interfaces)
 
@@ -46,9 +53,14 @@ ament_target_dependencies(direction_service_node rclcpp sensor_msgs geometry_msg
 add_executable(test_service_node src/test_service.cpp)
 ament_target_dependencies(test_service_node rclcpp sensor_msgs geometry_msgs custom_interfaces)
 
+add_executable(go2point_action_node src/go_to_point_action.cpp)
+ament_target_dependencies(go2point_action_node rclcpp rclcpp_action nav_msgs geometry_msgs custom_interfaces)
+
+
+
 
 # Install executable
-install(TARGETS patrol_node direction_service_node test_service_node patrolv2_node DESTINATION lib/${PROJECT_NAME})
+install(TARGETS patrol_node direction_service_node test_service_node patrolv2_node go2point_action_node DESTINATION lib/${PROJECT_NAME})
 
 # Install launch file
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
@@ -57,7 +69,8 @@ install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 install(FILES package.xml DESTINATION share/${PROJECT_NAME})
 
 # Export dependencies
-ament_export_dependencies(rclcpp sensor_msgs geometry_msgs)
+ament_export_dependencies(rclcpp rclcpp_action sensor_msgs geometry_msgs nav_msgs)
+
 
 
 
